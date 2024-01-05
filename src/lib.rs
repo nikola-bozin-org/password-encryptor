@@ -10,8 +10,8 @@ pub struct EncryptionData {
 }
 
 pub struct PasswordEncryptor<'a> {
-    pub key: &'a [u8],
-    pub encryption_prefix: String,
+    key: &'a [u8],
+    encryption_prefix: String,
 }
 
 impl<'a> PasswordEncryptor<'a> {
