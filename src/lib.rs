@@ -24,7 +24,7 @@ impl<'a> PasswordEncryptor<'a> {
 }
 
 impl<'a> PasswordEncryptor<'a> {
-    pub fn encrypt_into_b64u(&self, key: &'a [u8], encryption_data: &EncryptionData) -> Result<String> {
+    fn encrypt_into_b64u(&self, key: &'a [u8], encryption_data: &EncryptionData) -> Result<String> {
         let EncryptionData { content, salt } = encryption_data;
 
         let mut hmac_sha512 =
@@ -47,9 +47,13 @@ impl<'a> PasswordEncryptor<'a> {
         Ok(format!("{final_prefix}{encrypted}"))
     }
 
-    pub fn validate_pwd(&self, enc_content: &EncryptionData, pwd_ref: &str) -> Result<()> {
-        let pwd = self.encrypt_pwd(enc_content)?;
-        if pwd == pwd_ref {
+    pub fn validate_pwd(
+        &self,
+        encryption_data: &EncryptionData,
+        encrypted_password: &str,
+    ) -> Result<()> {
+        let inner_encrypted_password = self.encrypt_pwd(encryption_data)?;
+        if inner_encrypted_password == encrypted_password {
             Ok(())
         } else {
             Err(Error::PasswordsDontMatch)
@@ -111,7 +115,7 @@ mod tests {
 
         let encrypted = encryptor.encrypt_pwd(&data).unwrap();
         match encryptor.validate_pwd(&wrong_data, &encrypted) {
-            Err(Error::PasswordsDontMatch) => (), 
+            Err(Error::PasswordsDontMatch) => (),
             _ => panic!("Expected PasswordsDontMatch error"),
         }
     }
