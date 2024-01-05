@@ -24,7 +24,7 @@ impl<'a> PasswordEncryptor<'a> {
 }
 
 impl<'a> PasswordEncryptor<'a> {
-    fn encrypt_into_b64u(&self, key: &'a [u8], encryption_data: &EncryptionData) -> Result<String> {
+    fn encrypt_into_base64url(&self, key: &'a [u8], encryption_data: &EncryptionData) -> Result<String> {
         let EncryptionData { content, salt } = encryption_data;
 
         let mut hmac_sha512 =
@@ -42,7 +42,7 @@ impl<'a> PasswordEncryptor<'a> {
     }
 
     pub fn encrypt_pwd(&self, encryption_data: &EncryptionData) -> Result<String> {
-        let encrypted = self.encrypt_into_b64u(self.key, encryption_data)?;
+        let encrypted = self.encrypt_into_base64url(self.key, encryption_data)?;
         let final_prefix = &self.encryption_prefix;
         Ok(format!("{final_prefix}{encrypted}"))
     }
