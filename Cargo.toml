@@ -5,7 +5,7 @@ edition = "2021"
 description = "A helper for encrypting and validating password"
 license = "MIT"
 readme = "readme.md"
-keywords = ["password","ecryption","auth","encrypt","decrypt","validate"]
+keywords = ["password","ecryption","auth","encrypt","decrypt"]
 repository = "https://github.com/nikola-bozin-org/password-encryptor"
 
 [dependencies]
