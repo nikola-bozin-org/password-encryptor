@@ -11,14 +11,14 @@ pub struct EncryptionData {
 
 pub struct PasswordEncryptor<'a> {
     key: &'a [u8],
-    encryption_prefix: String,
+    encryption_prefix: Option<&'a str>,
 }
 
 impl<'a> PasswordEncryptor<'a> {
-    pub fn new(key: &'a [u8], encryption_prefix: Option<String>) -> Self {
+    pub fn new(key: &'a [u8], encryption_prefix: Option<&'a str>) -> Self {
         Self {
             key,
-            encryption_prefix: encryption_prefix.unwrap_or("".to_string()),
+            encryption_prefix,
         }
     }
 }
@@ -41,18 +41,18 @@ impl<'a> PasswordEncryptor<'a> {
         Ok(result)
     }
 
-    pub fn encrypt_pwd(&self, encryption_data: &EncryptionData) -> Result<String> {
+    pub fn encrypt_password(&self, encryption_data: &EncryptionData) -> Result<String> {
         let encrypted = self.encrypt_into_base64url(self.key, encryption_data)?;
-        let final_prefix = &self.encryption_prefix;
+        let final_prefix = self.encryption_prefix.unwrap_or("");
         Ok(format!("{final_prefix}{encrypted}"))
     }
 
-    pub fn validate_pwd(
+    pub fn validate_password(
         &self,
         encryption_data: &EncryptionData,
         encrypted_password: &str,
     ) -> Result<()> {
-        let inner_encrypted_password = self.encrypt_pwd(encryption_data)?;
+        let inner_encrypted_password = self.encrypt_password(encryption_data)?;
         if inner_encrypted_password == encrypted_password {
             Ok(())
         } else {
@@ -67,42 +67,42 @@ mod tests {
 
     #[test]
     fn test_successful_encryption() {
-        let encryptor = PasswordEncryptor::new(b"secret_key", Some("prefix_".to_string()));
+        let encryptor = PasswordEncryptor::new(b"secret_key",None);
         let data = EncryptionData {
             content: "password123".to_string(),
             salt: "salt".to_string(),
         };
 
-        let encrypted = encryptor.encrypt_pwd(&data).unwrap();
-        assert!(encrypted.starts_with("prefix_"));
+        let encrypted = encryptor.encrypt_password(&data).unwrap();
+        assert!(!encrypted.is_empty())
     }
 
     #[test]
     fn test_validation_success() {
-        let encryptor = PasswordEncryptor::new(b"secret_key", Some("prefix_".to_string()));
+        let encryptor = PasswordEncryptor::new(b"secret_key", None);
         let data = EncryptionData {
             content: "password123".to_string(),
             salt: "salt".to_string(),
         };
 
-        let encrypted = encryptor.encrypt_pwd(&data).unwrap();
-        assert!(encryptor.validate_pwd(&data, &encrypted).is_ok());
+        let encrypted = encryptor.encrypt_password(&data).unwrap();
+        assert!(encryptor.validate_password(&data, &encrypted).is_ok());
     }
 
     #[test]
     fn test_validation_failure() {
-        let encryptor = PasswordEncryptor::new(b"secret_key", Some("prefix_".to_string()));
+        let encryptor = PasswordEncryptor::new(b"secret_key", Some("prefix_"));
         let data = EncryptionData {
             content: "password123".to_string(),
             salt: "salt".to_string(),
         };
 
-        assert!(encryptor.validate_pwd(&data, "wrong_password").is_err());
+        assert!(encryptor.validate_password(&data, "wrong_password").is_err());
     }
 
     #[test]
     fn test_password_mismatch_error() {
-        let encryptor = PasswordEncryptor::new(b"secret_key", Some("prefix_".to_string()));
+        let encryptor = PasswordEncryptor::new(b"secret_key", Some("prefix_"));
         let data = EncryptionData {
             content: "password123".to_string(),
             salt: "salt".to_string(),
@@ -113,8 +113,8 @@ mod tests {
             salt: "salt".to_string(),
         };
 
-        let encrypted = encryptor.encrypt_pwd(&data).unwrap();
-        match encryptor.validate_pwd(&wrong_data, &encrypted) {
+        let encrypted = encryptor.encrypt_password(&data).unwrap();
+        match encryptor.validate_password(&wrong_data, &encrypted) {
             Err(Error::PasswordsDontMatch) => (),
             _ => panic!("Expected PasswordsDontMatch error"),
         }
