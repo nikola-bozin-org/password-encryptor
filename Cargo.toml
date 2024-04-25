@@ -1,6 +1,6 @@
 [package]
 name = "password-encryptor"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2021"
 description = "A helper crate for encrypting and validating password"
 license = "MIT"
@@ -19,3 +19,4 @@ opt-level = 0
 
 [profile.release]
 opt-level = 3
+codegen-units = 1

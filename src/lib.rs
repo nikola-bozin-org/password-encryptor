@@ -4,9 +4,9 @@ use error::{Error, Result};
 use hmac::{Hmac, Mac};
 use sha2::Sha512;
 
-pub struct EncryptionData {
-    pub content: String,
-    pub salt: String,
+pub struct EncryptionData<'a> {
+    pub content: &'a str,
+    pub salt: &'a str,
 }
 
 pub struct PasswordEncryptor<'a> {
@@ -24,7 +24,11 @@ impl<'a> PasswordEncryptor<'a> {
 }
 
 impl<'a> PasswordEncryptor<'a> {
-    fn encrypt_into_base64url(&self, key: &'a [u8], encryption_data: &EncryptionData) -> Result<String> {
+    fn encrypt_into_base64url(
+        &self,
+        key: &'a [u8],
+        encryption_data: &EncryptionData,
+    ) -> Result<String> {
         let EncryptionData { content, salt } = encryption_data;
 
         let mut hmac_sha512 =
@@ -67,10 +71,10 @@ mod tests {
 
     #[test]
     fn test_successful_encryption() {
-        let encryptor = PasswordEncryptor::new(b"secret_key",None);
+        let encryptor = PasswordEncryptor::new(b"secret_key", None);
         let data = EncryptionData {
-            content: "password123".to_string(),
-            salt: "salt".to_string(),
+            content: "password123",
+            salt: "salt",
         };
 
         let encrypted = encryptor.encrypt_password(&data).unwrap();
@@ -81,8 +85,8 @@ mod tests {
     fn test_validation_success() {
         let encryptor = PasswordEncryptor::new(b"secret_key", None);
         let data = EncryptionData {
-            content: "password123".to_string(),
-            salt: "salt".to_string(),
+            content: "password123",
+            salt: "salt",
         };
 
         let encrypted = encryptor.encrypt_password(&data).unwrap();
@@ -93,24 +97,26 @@ mod tests {
     fn test_validation_failure() {
         let encryptor = PasswordEncryptor::new(b"secret_key", Some("prefix_"));
         let data = EncryptionData {
-            content: "password123".to_string(),
-            salt: "salt".to_string(),
+            content: "password123",
+            salt: "salt",
         };
 
-        assert!(encryptor.validate_password(&data, "wrong_password").is_err());
+        assert!(encryptor
+            .validate_password(&data, "wrong_password")
+            .is_err());
     }
 
     #[test]
     fn test_password_mismatch_error() {
         let encryptor = PasswordEncryptor::new(b"secret_key", Some("prefix_"));
         let data = EncryptionData {
-            content: "password123".to_string(),
-            salt: "salt".to_string(),
+            content: "password123",
+            salt: "salt",
         };
 
         let wrong_data = EncryptionData {
-            content: "wrong_password".to_string(),
-            salt: "salt".to_string(),
+            content: "wrong_password",
+            salt: "salt",
         };
 
         let encrypted = encryptor.encrypt_password(&data).unwrap();

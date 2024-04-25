@@ -12,7 +12,7 @@ or add it to the dependencies
 
 ```rust
 [dependencies]
-password_encryptor = "1.0.0"
+password_encryptor = "1.1.0"
 ```
 
 # Usage
@@ -28,7 +28,7 @@ use password_encryptor::{EncryptionData, PasswordEncryptor};
 ### Note: Make sure that `encryption_prefix` is the same for encryption and validation. If you dont want to use prefix, just pass `None` instead.
 
 ```rust
-pub fn encrypt_password(password: String, salt: String) -> String {
+pub fn encrypt_password(password: &str, salt: &str) -> String {
     let encryptor = PasswordEncryptor::new(b"secret_key", Some("prefix_"));
     let data = EncryptionData {
         content: password,
@@ -44,13 +44,13 @@ pub fn encrypt_password(password: String, salt: String) -> String {
     }
 }
 
-pub fn validate_password(password: String, encrypted_password: String, salt: String) -> bool {
+pub fn validate_password(password: &str, encrypted_password: &str, salt: &str) -> bool {
     let encryptor = PasswordEncryptor::new(b"secret_key", Some("prefix_"));
     let data = EncryptionData {
         content: password,
         salt,
     };
-    let is_valid_password = encryptor.validate_password(&data, &encrypted_password);
+    let is_valid_password = encryptor.validate_password(&data, encrypted_password);
     is_valid_password.is_ok()
 }
 ```
@@ -64,30 +64,30 @@ mod tests {
 
     #[test]
     fn test_encrypt_password() {
-        let password = "test_password".to_string();
-        let salt = "random_salt".to_string();
+        let password = "test_password";
+        let salt = "random_salt";
 
-        let encrypted_password = encrypt_password(password.clone(), salt.clone());
+        let encrypted_password = encrypt_password(password, salt);
         assert!(!encrypted_password.contains("Unable to encrypt password."), "Encryption should succeed without errors.");
     }
 
     #[test]
     fn test_validate_password_success() {
-        let password = "test_password".to_string();
-        let salt = "random_salt".to_string();
-        let encrypted_password = encrypt_password(password.clone(), salt.clone());
+        let password = "test_password";
+        let salt = "random_salt";
+        let encrypted_password = encrypt_password(password, salt);
 
-        assert!(validate_password(password, encrypted_password, salt), "Password validation should succeed.");
+        assert!(validate_password(password, encrypted_password.as_str(), salt), "Password validation should succeed.");
     }
 
     #[test]
     fn test_validate_password_failure() {
-        let password = "test_password".to_string();
-        let wrong_password = "wrong_password".to_string();
-        let salt = "random_salt".to_string();
-        let encrypted_password = encrypt_password(password, salt.clone());
+        let password = "test_password";
+        let wrong_password = "wrong_password";
+        let salt = "random_salt";
+        let encrypted_password = encrypt_password(password, salt);
 
-        assert!(!validate_password(wrong_password, encrypted_password, salt), "Password validation should fail with incorrect password.");
+        assert!(!validate_password(wrong_password, encrypted_password.as_str(), salt), "Password validation should fail with incorrect password.");
     }
 }
 
