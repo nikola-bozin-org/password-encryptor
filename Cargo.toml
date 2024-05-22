@@ -1,6 +1,6 @@
 [package]
 name = "password-encryptor"
-version = "1.1.0"
+version = "1.1.1"
 edition = "2021"
 description = "A helper crate for encrypting and validating password"
 license = "MIT"

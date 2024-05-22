@@ -4,11 +4,14 @@ use error::{Error, Result};
 use hmac::{Hmac, Mac};
 use sha2::Sha512;
 
+
+#[derive(Clone)]
 pub struct EncryptionData<'a> {
     pub content: &'a str,
     pub salt: &'a str,
 }
 
+#[derive(Clone)]
 pub struct PasswordEncryptor<'a> {
     key: &'a [u8],
     encryption_prefix: Option<&'a str>,
