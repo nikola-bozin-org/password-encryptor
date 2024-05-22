@@ -1,3 +1,7 @@
+# 2.0.0
+
+Complete refactoring and making EncryptionPassword more easier to manage by removing lifetime parameters.
+
 # 1.1.2
 
 Update readme.md

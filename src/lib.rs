@@ -12,13 +12,13 @@ pub struct EncryptionData<'a> {
 }
 
 #[derive(Clone)]
-pub struct PasswordEncryptor<'a> {
-    key: &'a [u8],
-    encryption_prefix: Option<&'a str>,
+pub struct PasswordEncryptor {
+    key: Vec<u8>,
+    encryption_prefix: Option<String>,
 }
 
-impl<'a> PasswordEncryptor<'a> {
-    pub fn new(key: &'a [u8], encryption_prefix: Option<&'a str>) -> Self {
+impl PasswordEncryptor {
+    pub fn new(key: Vec<u8>, encryption_prefix: Option<String>) -> Self {
         Self {
             key,
             encryption_prefix,
@@ -26,10 +26,10 @@ impl<'a> PasswordEncryptor<'a> {
     }
 }
 
-impl<'a> PasswordEncryptor<'a> {
+impl PasswordEncryptor {
     fn encrypt_into_base64url(
         &self,
-        key: &'a [u8],
+        key: &[u8],
         encryption_data: &EncryptionData,
     ) -> Result<String> {
         let EncryptionData { content, salt } = encryption_data;
@@ -49,8 +49,8 @@ impl<'a> PasswordEncryptor<'a> {
     }
 
     pub fn encrypt_password(&self, encryption_data: &EncryptionData) -> Result<String> {
-        let encrypted = self.encrypt_into_base64url(self.key, encryption_data)?;
-        let final_prefix = self.encryption_prefix.unwrap_or("");
+        let encrypted = self.encrypt_into_base64url(&self.key, encryption_data)?;
+        let final_prefix = self.encryption_prefix.clone().unwrap_or("".to_string());
         Ok(format!("{final_prefix}{encrypted}"))
     }
 
@@ -74,7 +74,7 @@ mod tests {
 
     #[test]
     fn test_successful_encryption() {
-        let encryptor = PasswordEncryptor::new(b"secret_key", None);
+        let encryptor = PasswordEncryptor::new(vec![1,2,3], None);
         let data = EncryptionData {
             content: "password123",
             salt: "salt",
@@ -86,7 +86,7 @@ mod tests {
 
     #[test]
     fn test_validation_success() {
-        let encryptor = PasswordEncryptor::new(b"secret_key", None);
+        let encryptor = PasswordEncryptor::new(vec![1,2,3], None);
         let data = EncryptionData {
             content: "password123",
             salt: "salt",
@@ -98,7 +98,7 @@ mod tests {
 
     #[test]
     fn test_validation_failure() {
-        let encryptor = PasswordEncryptor::new(b"secret_key", Some("prefix_"));
+        let encryptor = PasswordEncryptor::new(vec![1,2,3], Some("prefix_".to_string()));
         let data = EncryptionData {
             content: "password123",
             salt: "salt",
@@ -111,7 +111,7 @@ mod tests {
 
     #[test]
     fn test_password_mismatch_error() {
-        let encryptor = PasswordEncryptor::new(b"secret_key", Some("prefix_"));
+        let encryptor = PasswordEncryptor::new(vec![1,2,3], Some("prefix_".to_string()));
         let data = EncryptionData {
             content: "password123",
             salt: "salt",
