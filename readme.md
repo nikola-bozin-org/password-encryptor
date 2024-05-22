@@ -12,7 +12,7 @@ or add it to the dependencies
 
 ```rust
 [dependencies]
-password_encryptor = "1.1.0"
+password-encryptor = "1.1.2"
 ```
 
 # Usage
